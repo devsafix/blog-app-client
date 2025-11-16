@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Facebook, Twitter, Github, Linkedin } from "lucide-react";
 
 const footerLinks = {
-  product: [
+  pages: [
     { href: "/", label: "Home" },
     { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
@@ -11,20 +11,19 @@ const footerLinks = {
   legal: [
     { href: "/privacy", label: "Privacy Policy" },
     { href: "/terms", label: "Terms of Service" },
-    { href: "/cookies", label: "Cookie Policy" },
   ],
   resources: [
-    { href: "/docs", label: "Documentation" },
     { href: "/faq", label: "FAQ" },
-    { href: "/support", label: "Support" },
+    { href: "/contact", label: "Support" },
+    { href: "/contacts", label: "Developer" },
   ],
 };
 
 const socialLinks = [
-  { href: "#", icon: Twitter, label: "Twitter" },
   { href: "#", icon: Github, label: "GitHub" },
   { href: "#", icon: Linkedin, label: "LinkedIn" },
   { href: "#", icon: Facebook, label: "Facebook" },
+  { href: "#", icon: Twitter, label: "Twitter" },
 ];
 
 export const Footer = () => {
@@ -68,7 +67,7 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold text-gray-900 mb-4">Product</h4>
             <ul className="space-y-3">
-              {footerLinks.product.map((link) => (
+              {footerLinks.pages.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
