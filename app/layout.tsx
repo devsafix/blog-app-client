@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Header } from "@/components/shared/Header";
+import { Footer } from "@/components/shared/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "DSX-B | DSX-B website",
+    default:
+      "DSX-B | A modern, fast, and SEO-friendly blog built with Next.js.",
     template: "%s | DSX-B",
   },
   description: "A modern, fast, and SEO-friendly blog built with Next.js.",
@@ -61,21 +64,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        {/* We'll add a real Header and Footer here soon */}
-        <header className="py-4 border-b">
-          <nav className="container mx-auto">
-            <h1 className="text-2xl font-bold">My Blog</h1>
-          </nav>
-        </header>
-
-        <main className="container mx-auto py-8">{children}</main>
-
-        <footer className="py-8 mt-12 border-t">
-          <p className="text-center text-gray-500">
-            © 2025 My Blog. All rights reserved.
-          </p>
-        </footer>
+      <body className={`${inter.className} min-h-screen flex flex-col`}>
+        <Header />
+        <main className="container mx-auto py-8 grow">{children}</main>
+        <Footer />
       </body>
     </html>
   );
