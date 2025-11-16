@@ -103,12 +103,12 @@ export async function getFeaturedPosts(limit: number = 6) {
   }
 }
 
-// 5. ADD THIS FUNCTION (or update if you have it)
+// 5. THIS IS THE FUNCTION WE NEED
 export async function searchPosts({
   search = "",
   tags = [],
   page = 1,
-  limit = 9, // Let's default to 9 to match the grid
+  limit = 9,
 }: {
   search?: string;
   tags?: string[];
@@ -118,7 +118,6 @@ export async function searchPosts({
   "use cache";
   cacheTag("posts", "search");
 
-  // Build the query parameters
   const params = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
@@ -134,11 +133,9 @@ export async function searchPosts({
 
   try {
     const res = await fetch(url);
-
     if (!res.ok) {
       throw new Error(`Failed to search posts: ${res.statusText}`);
     }
-
     const postsData: PostsResponse = await res.json();
     return postsData;
   } catch (error) {
