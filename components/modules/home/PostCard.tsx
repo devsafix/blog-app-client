@@ -82,7 +82,7 @@ export const PostCard = ({ post }: { post: Post }) => {
         <div className="flex items-center justify-between mt-4">
           {post.isFeatured && (
             <div>
-              <Badge className="bg-amber-500 hover:bg-amber-600 text-white">
+              <Badge className="bg-amber-600 hover:bg-amber-700 text-white">
                 ⭐ Featured
               </Badge>
             </div>
