@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Clock, Eye, Share2, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -22,11 +24,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  // Extract plain text from HTML content for meta description
   const plainText = post.content.replace(/<[^>]*>/g, "").substring(0, 160);
 
   return {
-    title: post.title,
+    title: `${post.title} | DSX-B`,
     description: plainText,
     keywords: post.tags,
     authors: [{ name: post.author.name }],
@@ -55,8 +56,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// --- 2. THE PAGE COMPONENT ---
+// Loading skeleton for the blog post
+function BlogPostSkeleton() {
+  return (
+    <article className="min-h-screen">
+      <div className="max-w-5xl mx-auto px-4 md:pt-5">
+        <Skeleton className="h-8 w-32 mb-4" />
+        <Skeleton className="h-16 w-full mb-4" />
+        <Skeleton className="h-12 w-3/4 mb-8" />
+
+        <div className="flex gap-6 mb-8">
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </div>
+
+        <Skeleton className="aspect-video w-full rounded-2xl mb-16" />
+
+        <div className="max-w-4xl mx-auto space-y-4">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// Main page component
 export default async function BlogPostPage({ params }: Props) {
+  return (
+    <Suspense fallback={<BlogPostSkeleton />}>
+      <BlogPostContent params={params} />
+    </Suspense>
+  );
+}
+
+// Separate component for the actual content
+async function BlogPostContent({ params }: Props) {
   const { id } = await params;
   const post = await getPostById(id);
 
@@ -64,12 +103,11 @@ export default async function BlogPostPage({ params }: Props) {
     notFound();
   }
 
-  // Calculate reading time (rough estimate: 200 words per minute)
   const wordCount = post.content.split(/\s+/).length;
   const readingTime = Math.ceil(wordCount / 200);
 
   return (
-    <article className="min-h-screen">
+    <article className="min-h-screen pb-16">
       {/* Hero Section */}
       <div className="relative">
         <div className="max-w-5xl mx-auto px-4 md:pt-5">
@@ -89,7 +127,7 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="flex flex-wrap items-center gap-6 text-gray-600 mb-8">
             {/* Author */}
             <div className="flex items-center gap-3">
-              <Avatar className="w-12 h-12">
+              <Avatar className="w-12 h-12 ring-2 ring-gray-100">
                 <AvatarImage
                   src={post.author.picture || undefined}
                   alt={post.author.name}
@@ -151,7 +189,7 @@ export default async function BlogPostPage({ params }: Props) {
 
           {/* Tags */}
           {post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-8">
               {post.tags.map((tag) => (
                 <Badge
                   key={tag}
@@ -168,7 +206,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* Featured Image */}
       {post.thumbnail && (
-        <div className="max-w-5xl mx-auto px-4 mt-8 mb-16">
+        <div className="max-w-5xl mx-auto px-4 mb-16">
           <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl">
             <Image
               src={post.thumbnail}
@@ -187,23 +225,25 @@ export default async function BlogPostPage({ params }: Props) {
         <div
           className="prose prose-lg prose-gray max-w-none
             prose-headings:font-bold prose-headings:text-gray-900
-            prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl
-            prose-p:text-gray-700 prose-p:leading-relaxed
+            prose-h1:text-4xl prose-h1:mt-8 prose-h1:mb-4
+            prose-h2:text-3xl prose-h2:mt-8 prose-h2:mb-4
+            prose-h3:text-2xl prose-h3:mt-6 prose-h3:mb-3
+            prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4
             prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
             prose-strong:text-gray-900 prose-strong:font-semibold
-            prose-code:text-blue-600 prose-code:bg-blue-50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-            prose-pre:bg-gray-900 prose-pre:text-gray-100
-            prose-blockquote:border-l-4 prose-blockquote:border-blue-600 prose-blockquote:bg-blue-50 prose-blockquote:italic
-            prose-img:rounded-xl prose-img:shadow-lg
-            prose-ul:list-disc prose-ol:list-decimal
-            prose-li:text-gray-700"
+            prose-code:text-blue-600 prose-code:bg-blue-50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+            prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:p-4
+            prose-blockquote:border-l-4 prose-blockquote:border-blue-600 prose-blockquote:bg-blue-50 prose-blockquote:italic prose-blockquote:pl-4 prose-blockquote:py-2
+            prose-img:rounded-xl prose-img:shadow-lg prose-img:my-8
+            prose-ul:list-disc prose-ul:my-4 prose-ol:list-decimal prose-ol:my-4
+            prose-li:text-gray-700 prose-li:my-1"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
         {/* Author Bio Section */}
         <div className="mt-16 pt-8 border-t border-gray-200">
-          <div className="flex items-start gap-4 bg-gray-50 rounded-xl p-6">
-            <Avatar className="w-16 h-16">
+          <div className="flex items-start gap-4 bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors">
+            <Avatar className="w-16 h-16 ring-2 ring-white">
               <AvatarImage
                 src={post.author.picture || undefined}
                 alt={post.author.name}
@@ -213,13 +253,13 @@ export default async function BlogPostPage({ params }: Props) {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
+              <p className="text-sm text-gray-500 mb-1">Written by</p>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {post.author.name}
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
                 {post.author.email}
               </p>
-              {/* Add author bio here if available in your schema */}
             </div>
           </div>
         </div>
