@@ -129,7 +129,7 @@ export async function loginAction(
       const maxAge = maxAgeMatch ? parseInt(maxAgeMatch[1], 10) : undefined;
 
       if (cookieValue) {
-        cookies().set("blogAppToken", cookieValue, {
+        (await cookies()).set("blogAppToken", cookieValue, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
