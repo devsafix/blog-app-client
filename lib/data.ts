@@ -102,3 +102,50 @@ export async function getFeaturedPosts(limit: number = 6) {
     return [];
   }
 }
+
+// 5. ADD THIS FUNCTION (or update if you have it)
+export async function searchPosts({
+  search = "",
+  tags = [],
+  page = 1,
+  limit = 9, // Let's default to 9 to match the grid
+}: {
+  search?: string;
+  tags?: string[];
+  page?: number;
+  limit?: number;
+}) {
+  "use cache";
+  cacheTag("posts", "search");
+
+  // Build the query parameters
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+  if (search) {
+    params.set("search", search);
+  }
+  if (tags.length > 0) {
+    params.set("tags", tags.join(","));
+  }
+
+  const url = `${process.env.API_BASE_URL}/post?${params.toString()}`;
+
+  try {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error(`Failed to search posts: ${res.statusText}`);
+    }
+
+    const postsData: PostsResponse = await res.json();
+    return postsData;
+  } catch (error) {
+    console.error("Error searching posts:", error);
+    return {
+      data: [],
+      pagination: { page: 1, limit: limit, totalData: 0, totalPages: 1 },
+    };
+  }
+}
