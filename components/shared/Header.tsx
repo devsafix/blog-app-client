@@ -16,7 +16,7 @@ export const Header = () => {
           className="text-2xl font-bold text-gray-900"
           aria-label="The Modern Blog - Homepage"
         >
-          TheModern<span className="text-blue-600">Blog</span>
+          DSX-<span className="text-blue-600">B</span>
         </Link>
 
         <div className="flex items-center gap-4">
