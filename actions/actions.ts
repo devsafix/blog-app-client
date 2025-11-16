@@ -3,10 +3,10 @@
 import { z } from "zod";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { getUserPayload, requireAdmin } from "@/lib/auth";
 
 // --- Zod Schemas for Validation ---
-
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
@@ -18,6 +18,14 @@ const registerSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+const postSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  content: z.string().min(10, "Content must be at least 10 characters"),
+  thumbnail: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  isFeatured: z.boolean().default(false),
+  tags: z.array(z.string()).default([]),
+});
+
 // --- Types for Action State ---
 export type FormState = {
   success: boolean;
@@ -27,12 +35,28 @@ export type FormState = {
 
 const API_BASE_URL = process.env.API_BASE_URL;
 
+// --- Helper: Get Auth Headers ---
+async function getAuthHeaders(): Promise<HeadersInit> {
+  // FIX: Removed 'await' from cookies()
+  const cookieStore = await cookies();
+  const token = cookieStore.get("blogAppToken")?.value;
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Cookie"] = `blogAppToken=${token}`;
+  }
+
+  return headers;
+}
+
 // --- REGISTER ACTION ---
 export async function registerAction(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  // 1. Get and validate data
   const validatedFields = registerSchema.safeParse(
     Object.fromEntries(formData.entries())
   );
@@ -46,30 +70,29 @@ export async function registerAction(
   }
 
   try {
-    // 2. Call the backend's 'createUser' endpoint
     const res = await fetch(`${API_BASE_URL}/user`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(validatedFields.data),
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      // Handle backend errors (e.g., "email already exists")
       return {
         success: false,
         message: data.message || "Registration failed. Please try again.",
       };
     }
 
-    // 3. On success, return a success message
     return {
       success: true,
       message: "Registration successful! You can now log in.",
     };
   } catch (error) {
-    console.error(error);
+    console.error("Registration error:", error);
     return {
       success: false,
       message: "An unknown error occurred. Please try again.",
@@ -82,7 +105,6 @@ export async function loginAction(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  // 1. Get and validate data
   const validatedFields = loginSchema.safeParse(
     Object.fromEntries(formData.entries())
   );
@@ -96,10 +118,11 @@ export async function loginAction(
   }
 
   try {
-    // 2. Call the backend's 'login' endpoint
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(validatedFields.data),
     });
 
@@ -111,51 +134,294 @@ export async function loginAction(
       };
     }
 
-    // 3. *** IMPORTANT: Handle the cookie ***
-    // The backend sends 'Set-Cookie'. We grab it
-    // and set it for the Next.js app's domain.
+    // Handle the Set-Cookie header from backend
     const setCookieHeader = res.headers.get("Set-Cookie");
-
-    console.log(setCookieHeader);
-
     if (setCookieHeader) {
-      // Parse the cookie string to get the value and attributes
-      // A simple parse for 'blogAppToken=value;'
-      const cookieValue = setCookieHeader.split(";")[0].split("=")[1];
+      // Parse cookie value and attributes
+      const cookieParts = setCookieHeader.split(";");
+      const cookieValue = cookieParts[0].split("=")[1];
       const maxAgeMatch = setCookieHeader.match(/Max-Age=(\d+)/);
-      const maxAge = maxAgeMatch ? parseInt(maxAgeMatch[1], 10) : undefined;
+      const maxAge = maxAgeMatch
+        ? parseInt(maxAgeMatch[1], 10)
+        : 7 * 24 * 60 * 60; // Default 7 days
 
       if (cookieValue) {
-        (await cookies()).set("blogAppToken", cookieValue, {
+        // FIX: Removed 'await' from cookies()
+        const cookieStore = await cookies();
+        cookieStore.set("blogAppToken", cookieValue, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
           path: "/",
           maxAge: maxAge,
         });
       }
     } else {
-      // This shouldn't happen based on our backend, but it's good to check
       return {
         success: false,
         message: "Login successful, but no auth token was provided.",
       };
     }
+
+    // Revalidate and redirect
+    revalidatePath("/", "layout");
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     return {
       success: false,
       message: "An unknown error occurred. Please try again.",
     };
   }
 
-  // 4. On success, revalidate the root path and redirect
-  revalidatePath("/");
-  redirect("/dashboard"); // Redirect to the dashboard
+  // Redirect after try-catch to avoid redirect errors
+  redirect("/dashboard");
 }
 
 // --- LOGOUT ACTION ---
 export async function logoutAction() {
-  (await cookies()).delete("blogAppToken");
+  const cookieStore = await cookies();
+  cookieStore.delete("blogAppToken");
+  revalidatePath("/", "layout");
   redirect("/login");
+}
+
+// --- DELETE POST ACTION ---
+export async function deletePostAction(postId: number): Promise<FormState> {
+  try {
+    // Check authorization
+    const user = await requireAdmin();
+    if (!user || user.role !== "ADMIN") {
+      return { success: false, message: "Not authorized." };
+    }
+
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE_URL}/post/${postId}`, {
+      method: "DELETE",
+      headers,
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        message: data.message || "Failed to delete post.",
+      };
+    }
+
+    // Revalidate caches
+    revalidateTag("posts", "max");
+    revalidateTag("posts-featured", "max");
+    revalidateTag("sitemap", "max");
+    revalidatePath("/blog");
+    revalidatePath("/dashboard");
+
+    return { success: true, message: "Post deleted successfully." };
+  } catch (error) {
+    console.error("Delete post error:", error);
+    return {
+      success: false,
+      message: "An error occurred while deleting the post.",
+    };
+  }
+}
+
+// --- CREATE POST ACTION ---
+export async function createPostAction(
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  try {
+    // Check authorization
+    const user = await requireAdmin();
+    if (!user || user.role !== "ADMIN") {
+      return { success: false, message: "Not authorized." };
+    }
+
+    // Parse tags (handle both comma-separated string and array)
+    const tagsInput = formData.get("tags");
+    let tags: string[] = [];
+
+    if (typeof tagsInput === "string") {
+      // Split by comma and clean up
+      tags = tagsInput
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+    } else if (Array.isArray(tagsInput)) {
+      tags = tagsInput.filter((tag): tag is string => typeof tag === "string");
+    }
+
+    // Validate form data
+    const validatedFields = postSchema.safeParse({
+      title: formData.get("title"),
+      content: formData.get("content"),
+      thumbnail: formData.get("thumbnail") || "",
+      isFeatured:
+        formData.get("isFeatured") === "true" ||
+        formData.get("isFeatured") === "on",
+      tags,
+    });
+
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        message: "Validation failed. Please check your inputs.",
+        errors: validatedFields.error.flatten().fieldErrors,
+      };
+    }
+
+    // Send data to backend
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE_URL}/post`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        ...validatedFields.data,
+        authorId: user.id,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        message: data.message || "Failed to create post.",
+      };
+    }
+
+    // Revalidate caches
+    revalidateTag("posts", "max");
+    revalidateTag("posts-featured", "max");
+    revalidateTag("sitemap", "max");
+    revalidatePath("/blog");
+    revalidatePath("/dashboard");
+
+    return { success: true, message: "Post created successfully!" };
+  } catch (error) {
+    console.error("Create post error:", error);
+    return {
+      success: false,
+      message: "An error occurred while creating the post.",
+    };
+  }
+}
+
+// --- UPDATE POST ACTION ---
+export async function updatePostAction(
+  postId: number,
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  try {
+    // Check authorization
+    const user = await requireAdmin();
+    if (!user || user.role !== "ADMIN") {
+      return { success: false, message: "Not authorized." };
+    }
+
+    // Parse tags
+    const tagsInput = formData.get("tags");
+    let tags: string[] = [];
+
+    if (typeof tagsInput === "string") {
+      tags = tagsInput
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+    }
+
+    // Validate form data
+    const validatedFields = postSchema.safeParse({
+      title: formData.get("title"),
+      content: formData.get("content"),
+      thumbnail: formData.get("thumbnail") || "",
+      isFeatured:
+        formData.get("isFeatured") === "true" ||
+        formData.get("isFeatured") === "on",
+      tags,
+    });
+
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        message: "Validation failed. Please check your inputs.",
+        errors: validatedFields.error.flatten().fieldErrors,
+      };
+    }
+
+    // Send data to backend
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE_URL}/post/${postId}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(validatedFields.data),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        message: data.message || "Failed to update post.",
+      };
+    }
+
+    // Revalidate caches
+
+    revalidateTag(`post:${postId}`, "max");
+    revalidateTag("posts", "max");
+    revalidateTag("posts-featured", "max");
+    revalidateTag("sitemap", "max");
+    revalidatePath("/blog");
+    revalidatePath(`/blog/${postId}`);
+    revalidatePath("/dashboard");
+
+    return { success: true, message: "Post updated successfully!" };
+  } catch (error) {
+    console.error("Update post error:", error);
+    return {
+      success: false,
+      message: "An error occurred while updating the post.",
+    };
+  }
+}
+
+// --- TOGGLE FEATURED STATUS ACTION ---
+export async function toggleFeaturedAction(
+  postId: number,
+  isFeatured: boolean
+): Promise<FormState> {
+  try {
+    const user = await getUserPayload();
+    if (!user || user.role !== "ADMIN") {
+      return { success: false, message: "Not authorized." };
+    }
+
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE_URL}/post/${postId}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ isFeatured }),
+    });
+
+    if (!res.ok) {
+      return { success: false, message: "Failed to update post." };
+    }
+
+    // Revalidate caches
+    revalidateTag(`post:${postId}`, "max");
+    revalidateTag("posts", "max");
+    revalidateTag("posts-featured", "max");
+    revalidateTag("sitemap", "max");
+    revalidatePath("/blog");
+    revalidatePath(`/blog/${postId}`);
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      message: isFeatured ? "Post featured!" : "Post unfeatured!",
+    };
+  } catch (error) {
+    console.error("Toggle featured error:", error);
+    return { success: false, message: "An error occurred." };
+  }
 }
