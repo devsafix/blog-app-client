@@ -19,7 +19,6 @@ const registerSchema = z.object({
 });
 
 // --- Types for Action State ---
-
 export type FormState = {
   success: boolean;
   message: string;
@@ -29,7 +28,6 @@ export type FormState = {
 const API_BASE_URL = process.env.API_BASE_URL;
 
 // --- REGISTER ACTION ---
-
 export async function registerAction(
   prevState: FormState,
   formData: FormData
@@ -80,7 +78,6 @@ export async function registerAction(
 }
 
 // --- LOGIN ACTION ---
-
 export async function loginAction(
   prevState: FormState,
   formData: FormData
@@ -155,4 +152,10 @@ export async function loginAction(
   // 4. On success, revalidate the root path and redirect
   revalidatePath("/");
   redirect("/dashboard"); // Redirect to the dashboard
+}
+
+// --- LOGOUT ACTION ---
+export async function logoutAction() {
+  (await cookies()).delete("blogAppToken");
+  redirect("/login");
 }
