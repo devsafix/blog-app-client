@@ -26,6 +26,13 @@ const postSchema = z.object({
   tags: z.array(z.string()).default([]),
 });
 
+const profileSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().optional().or(z.literal("")),
+  picture: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+});
+
 // --- Types for Action State ---
 export type FormState = {
   success: boolean;
@@ -423,5 +430,61 @@ export async function toggleFeaturedAction(
   } catch (error) {
     console.error("Toggle featured error:", error);
     return { success: false, message: "An error occurred." };
+  }
+}
+
+export async function updateUserAction(
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  try {
+    // 1. Get user and validate auth
+    const user = await getUserPayload();
+    if (!user) {
+      return { success: false, message: "Not authorized." };
+    }
+
+    // 2. Validate form data
+    const validatedFields = profileSchema.safeParse({
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      picture: formData.get("picture"),
+    });
+
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        message: "Validation failed.",
+        errors: validatedFields.error.flatten().fieldErrors,
+      };
+    }
+
+    // 3. Send data to backend PATCH /user/:id endpoint
+    const headers = await getAuthHeaders(); // Your helper function
+    const res = await fetch(`${API_BASE_URL}/user/${user.id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(validatedFields.data),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        message: data.message || "Failed to update profile.",
+      };
+    }
+
+    revalidateTag("user-profile", "max");
+    revalidatePath("/dashboard");
+
+    return { success: true, message: "Profile updated successfully!" };
+  } catch (error) {
+    console.error("Update profile error:", error);
+    return {
+      success: false,
+      message: "An error occurred while updating your profile.",
+    };
   }
 }

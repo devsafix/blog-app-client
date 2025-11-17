@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { UserPayload } from "@/lib/auth";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -12,7 +13,7 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-export const Header = () => {
+export const Navbar = ({ user }: { user: UserPayload }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -43,10 +44,15 @@ export const Header = () => {
                 </li>
               ))}
             </ul>
-
-            <Button asChild className="shadow-sm">
-              <Link href="/login">Login</Link>
-            </Button>
+            {user ? (
+              <Button asChild className="shadow-sm">
+                <Link href="/dashboard">Dashboard</Link>
+              </Button>
+            ) : (
+              <Button asChild className="shadow-sm">
+                <Link href="/login">Login</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -79,9 +85,15 @@ export const Header = () => {
                 </li>
               ))}
               <li className="px-4 pt-2">
-                <Button asChild className="w-full">
-                  <Link href="/login">Login</Link>
-                </Button>
+                {user ? (
+                  <Button asChild className="w-full">
+                    <Link href="/dashboard">Dashboard</Link>
+                  </Button>
+                ) : (
+                  <Button asChild className="w-full">
+                    <Link href="/login">Login</Link>
+                  </Button>
+                )}
               </li>
             </ul>
           </div>

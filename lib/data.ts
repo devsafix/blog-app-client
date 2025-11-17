@@ -1,5 +1,7 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { Post, PostsResponse } from "@/types";
+import { Post, PostsResponse, User } from "@/types";
+import { getUserPayload } from "./auth";
+import { cookies } from "next/headers";
 
 // 1. Get all posts with pagination
 export async function getAllPosts({
@@ -35,11 +37,13 @@ export async function getAllPosts({
 
 // 2. Get a single post by ID
 export async function getPostById(id: string | number) {
-  
+  "use cache";
+  cacheTag("post");
+  cacheLife("days");
 
   const url = `${process.env.API_BASE_URL}/post/${id}`;
 
-  console.log(url)
+  console.log(url);
 
   try {
     const res = await fetch(url);
@@ -145,4 +149,46 @@ export async function searchPosts({
       pagination: { page: 1, limit: limit, totalData: 0, totalPages: 1 },
     };
   }
+}
+
+export async function getCachedUserProfile(
+  userId: number,
+  token: string | undefined
+): Promise<User | null> {
+  "use cache";
+  cacheTag("user-profile");
+
+  if (!token) {
+    console.error("No auth token provided to getCachedUserProfile");
+    return null;
+  }
+
+  const url = `${process.env.API_BASE_URL}/user/${userId}`;
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Cookie: `blogAppToken=${token}`,
+      },
+      next: {
+        tags: ["user-profile"],
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch user profile from cache");
+    }
+    const userData = await res.json();
+    return userData;
+  } catch (error) {
+    console.error("Error in getCachedUserProfile:", error);
+    return null;
+  }
+}
+
+export async function getUserProfile(): Promise<User | null> {
+  const user = await getUserPayload();
+  if (!user) return null;
+  const token = (await cookies()).get("blogAppToken")?.value;
+  return getCachedUserProfile(user.id as number, token);
 }

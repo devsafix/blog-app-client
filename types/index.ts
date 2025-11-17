@@ -4,6 +4,7 @@ export interface User {
   email: string;
   picture: string | null;
   status: string;
+  phone: string | null;
 }
 
 export interface Post {

@@ -3,15 +3,36 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, FileText, Settings, Home } from "lucide-react";
+import { UserPayload } from "@/lib/auth";
 
 const navLinks = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/posts", label: "Posts", icon: FileText },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  {
+    href: "/dashboard",
+    label: "Overview",
+    icon: LayoutDashboard,
+    role: "ANY",
+  },
+  {
+    href: "/dashboard/posts",
+    label: "Posts",
+    icon: FileText,
+    role: "ADMIN",
+  },
+  {
+    href: "/dashboard/settings",
+    label: "Settings",
+    icon: Settings,
+    role: "ANY",
+  },
 ];
 
-export function Sidebar() {
+export function Sidebar({ user }: { user: UserPayload }) {
   const pathname = usePathname();
+
+  const filteredNavLinks = navLinks.filter((link) => {
+    if (link.role === "ANY") return true;
+    return user?.role === link.role;
+  });
 
   return (
     <aside className="w-64 shrink-0 border-r border-gray-200 bg-white">
@@ -19,13 +40,13 @@ export function Sidebar() {
         {/* Logo/Title */}
         <div className="h-16 flex items-center justify-center border-b">
           <Link href="/dashboard" className="text-2xl font-bold text-gray-900">
-            DSX-B <span className="text-blue-600">Admin</span>
+            DSX-<span className="text-blue-600">B</span>
           </Link>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 py-6 px-4 space-y-2">
-          {navLinks.map((link) => {
+          {filteredNavLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
@@ -50,7 +71,6 @@ export function Sidebar() {
         <div className="mt-auto p-4 border-t">
           <Link
             href="/"
-            target="_blank"
             className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900"
           >
             <Home className="w-5 h-5" />

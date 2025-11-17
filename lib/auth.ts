@@ -2,10 +2,12 @@ import "server-only";
 import { cookies } from "next/headers";
 import * as jose from "jose";
 
+// 1. EXPORT THE USER PAYLOAD TYPE
+export type UserPayload = jose.JWTPayload | null;
+
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function verifyAuth() {
-  // FIX: Removed 'await' from cookies()
   const token = (await cookies()).get("blogAppToken")?.value || "";
 
   if (!token) {
@@ -21,9 +23,9 @@ export async function verifyAuth() {
   }
 }
 
-export async function getUserPayload() {
+export async function getUserPayload(): Promise<UserPayload> {
   try {
-    const payload = await verifyAuth();
+    const payload = (await verifyAuth()) as UserPayload;
     return payload;
   } catch (err) {
     console.error(err);

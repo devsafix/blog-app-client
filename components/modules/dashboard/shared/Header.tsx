@@ -1,4 +1,4 @@
-import { getUserPayload } from "@/lib/auth";
+import { UserPayload } from "@/lib/auth";
 import { logoutAction } from "@/actions/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -19,9 +19,9 @@ function LogoutButton() {
       <Button
         type="submit"
         variant="ghost"
-        className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+        className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 cursor-pointer"
       >
-        <LogOut className="mr-2 h-4 w-4" />
+        <LogOut className="h-4 w-4" />
         Log out
       </Button>
     </form>
@@ -29,9 +29,7 @@ function LogoutButton() {
 }
 
 // Main Header (Async Server Component)
-export async function Header() {
-  const user = await getUserPayload();
-
+export async function Header({ user }: { user: UserPayload }) {
   return (
     <header className="h-16 shrink-0 flex items-center justify-between px-6 border-b bg-white">
       <div>
@@ -61,7 +59,7 @@ export async function Header() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuLabel> My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="p-0">
             <LogoutButton />

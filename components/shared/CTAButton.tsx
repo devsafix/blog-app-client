@@ -1,6 +1,6 @@
 import { Button } from "../ui/button";
 
-export default function CtaButton() {
+export default function CTAButton() {
   return (
     <section className="max-w-4xl mx-auto px-4">
       <div className="bg-blue-600 rounded-2xl p-8 md:p-12 text-center text-white">
