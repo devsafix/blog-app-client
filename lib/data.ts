@@ -7,15 +7,17 @@ import { cookies } from "next/headers";
 export async function getAllPosts({
   page = 1,
   limit = 10,
+  sortBy = "desc",
 }: {
   page?: number;
   limit?: number;
+  sortBy?: "asc" | "desc";
 }) {
   "use cache";
   cacheTag("posts");
   cacheLife("hours");
 
-  const url = `${process.env.API_BASE_URL}/post?page=${page}&limit=${limit}`;
+  const url = `${process.env.API_BASE_URL}/post?page=${page}&limit=${limit}&sortBy=${sortBy}`;
 
   try {
     const res = await fetch(url);
@@ -133,7 +135,7 @@ export async function searchPosts({
     params.set("tags", tags.join(","));
   }
 
-  const url = `${process.env.API_BASE_URL}/post?${params.toString()}`;
+  const url = `${process.env.API_BASE_URL}/post?${params.toString()}&sortBy=desc`;
 
   try {
     const res = await fetch(url);

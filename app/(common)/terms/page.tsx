@@ -122,7 +122,7 @@ const sections = [
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen py-16">
+    <div className="min-h-screen py-16 md:py-24">
       {/* Hero Section */}
       <section className="max-w-4xl mx-auto px-4 mb-16">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">

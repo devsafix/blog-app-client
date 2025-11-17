@@ -14,7 +14,6 @@ export default function CTASection() {
       toast.error("Please enter your email");
       return;
     }
-    // Add your subscription logic here
     toast.success("Thank you for subscribing!");
     setEmail("");
   };
@@ -49,7 +48,7 @@ export default function CTASection() {
 
           <motion.form
             onSubmit={handleSubscribe}
-            className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
+            className="flex flex-col sm:flex-row items-center gap-4 max-w-md mx-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -66,7 +65,7 @@ export default function CTASection() {
               type="submit"
               size="lg"
               variant="secondary"
-              className="whitespace-nowrap font-semibold shadow-lg hover:shadow-xl transition-shadow"
+              className="whitespace-nowrap px-6 py-3 cursor-pointer font-semibold shadow-lg"
             >
               Subscribe
             </Button>

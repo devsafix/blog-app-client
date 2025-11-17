@@ -67,7 +67,7 @@ export default async function BlogPostContent({ params }: Props) {
   const readingTime = Math.ceil(wordCount / 200);
 
   return (
-    <article className="min-h-screen pb-16">
+    <article className="min-h-screen py-10">
       {/* Hero Section */}
       <div className="relative">
         <div className="max-w-5xl mx-auto px-4 md:pt-5">

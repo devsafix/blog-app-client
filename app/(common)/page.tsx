@@ -5,19 +5,17 @@ import PostCardSkeleton from "@/components/shared/PostCardSkeleton";
 import HeroSection from "@/components/modules/home/HeroSection";
 import FeaturedSection from "@/components/modules/home/FeaturedSection";
 import LatestSection from "@/components/modules/home/LatestSection";
-import CTASection from "@/components/modules/home/CTASection";
+import CTASection from "@/components/shared/CTASection";
 
 export default async function HomePage() {
   const [featuredPosts, latestPosts] = await Promise.all([
     getFeaturedPosts(3),
-    getAllPosts({ page: 1, limit: 6 }),
+    getAllPosts({ page: 1, limit: 6, sortBy: "desc" }),
   ]);
 
   return (
-    <div className="space-y-24 pb-20 relative">
+    <div className="space-y-24 pb-10 md:pb-20 relative">
       {/* Grid Background */}
-    
-     
 
       <HeroSection />
 

@@ -1,7 +1,6 @@
 import { Metadata } from "next";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Users, Target, Lightbulb, Award } from "lucide-react";
+import CTASection from "@/components/shared/CTASection";
 
 export const metadata: Metadata = {
   title: "About Us | DSX-B",
@@ -56,8 +55,22 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="py-16 md:py-24 bg-linear-to-b from-blue-50 to-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      <section className="py-16 md:py-24 relative">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+        linear-gradient(45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%),
+        linear-gradient(-45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%)
+      `,
+            backgroundSize: "40px 40px",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 70%)",
+            maskImage:
+              "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 70%)",
+          }}
+        />
+        <div className="max-w-4xl mx-auto px-4 text-center z-10 relative">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900">
             About <span className="text-blue-600">DSX-B</span>
           </h1>
@@ -147,30 +160,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
-        <div className="max-w-4xl mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Join Our Community
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Whether you&apos;re a writer or a reader, there&apos;s a place for
-            you at DSX-B
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" variant="secondary">
-              <Link href="/blog">Start Reading</Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="bg-transparent text-white border-white hover:bg-white hover:text-blue-600"
-            >
-              <Link href="/contact">Get in Touch</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <CTASection />
     </div>
   );
 }

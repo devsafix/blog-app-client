@@ -4,7 +4,7 @@ import { Facebook, Twitter, Github, Linkedin } from "lucide-react";
 const footerLinks = {
   pages: [
     { href: "/", label: "Home" },
-    { href: "/blog", label: "Blog" },
+    { href: "/blog", label: "Blogs" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
   ],
@@ -15,15 +15,23 @@ const footerLinks = {
   resources: [
     { href: "/faq", label: "FAQ" },
     { href: "/contact", label: "Support" },
-    { href: "/contacts", label: "Developer" },
+    { href: "https://devsafix.vercel.app/", label: "Developer" },
   ],
 };
 
 const socialLinks = [
-  { href: "#", icon: Github, label: "GitHub" },
-  { href: "#", icon: Linkedin, label: "LinkedIn" },
-  { href: "#", icon: Facebook, label: "Facebook" },
-  { href: "#", icon: Twitter, label: "Twitter" },
+  { href: "https://github.com/devsafix", icon: Github, label: "GitHub" },
+  {
+    href: "https://www.linkedin.com/in/devsafix/",
+    icon: Linkedin,
+    label: "LinkedIn",
+  },
+  {
+    href: "https://www.facebook.com/devsafix",
+    icon: Facebook,
+    label: "Facebook",
+  },
+  { href: "https://x.com/devsafix", icon: Twitter, label: "Twitter" },
 ];
 
 export const Footer = () => {
@@ -126,14 +134,15 @@ export const Footer = () => {
             {/* Social Links */}
             <div className="flex items-center gap-4">
               {socialLinks.map((social) => (
-                <a
+                <Link
+                  target="_blank"
                   key={social.label}
                   href={social.href}
                   className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   aria-label={social.label}
                 >
                   <social.icon className="w-5 h-5" />
-                </a>
+                </Link>
               ))}
             </div>
           </div>

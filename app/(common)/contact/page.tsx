@@ -66,10 +66,24 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen py-16">
+    <div className="min-h-screen py-16 md:py-24">
       {/* Hero Section */}
-      <section className="max-w-4xl mx-auto px-4 text-center mb-16">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900">
+      <section className="max-w-4xl mx-auto px-4 text-center mb-16 relative">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+        linear-gradient(45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%),
+        linear-gradient(-45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%)
+      `,
+            backgroundSize: "40px 40px",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 70%)",
+            maskImage:
+              "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 70%)",
+          }}
+        />
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 relative z-10">
           Get in <span className="text-blue-600">Touch</span>
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed">

@@ -5,9 +5,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { HelpCircle } from "lucide-react";
+import CTASection from "@/components/shared/CTASection";
 
 export const metadata: Metadata = {
   title: "Frequently Asked Questions | DSX-B",
@@ -118,7 +117,7 @@ const faqCategories = [
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen py-16">
+    <div className="min-h-screen py-16 md:py-24">
       {/* Hero Section */}
       <section className="max-w-4xl mx-auto px-4 text-center mb-16">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
@@ -163,18 +162,7 @@ export default function FAQPage() {
       </div>
 
       {/* Contact CTA */}
-      <section className="max-w-4xl mx-auto px-4 mt-20">
-        <div className="bg-blue-600 rounded-2xl p-8 md:p-12 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Still have questions?</h2>
-          <p className="text-blue-100 text-lg mb-8">
-            Can&apos;t find the answer you&apos;re looking for? Our support team
-            is here to help.
-          </p>
-          <Button asChild size="lg" variant="secondary">
-            <Link href="/contact">Contact Support</Link>
-          </Button>
-        </div>
-      </section>
+      <CTASection />
     </div>
   );
 }
