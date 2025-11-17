@@ -44,9 +44,13 @@ export const Navbar = ({ user }: { user: UserPayload }) => {
                 </li>
               ))}
             </ul>
-            {user ? (
+            {user && user.role === "ADMIN" ? (
               <Button asChild className="shadow-sm">
                 <Link href="/dashboard">Dashboard</Link>
+              </Button>
+            ) : user ? (
+              <Button asChild className="shadow-sm">
+                <Link href="/dashboard/settings">Dashboard</Link>
               </Button>
             ) : (
               <Button asChild className="shadow-sm">
@@ -85,12 +89,16 @@ export const Navbar = ({ user }: { user: UserPayload }) => {
                 </li>
               ))}
               <li className="px-4 pt-2">
-                {user ? (
-                  <Button asChild className="w-full">
+                {user && user.role === "ADMIN" ? (
+                  <Button asChild className="shadow-sm">
                     <Link href="/dashboard">Dashboard</Link>
                   </Button>
+                ) : user ? (
+                  <Button asChild className="shadow-sm">
+                    <Link href="/dashboard/settings">Dashboard</Link>
+                  </Button>
                 ) : (
-                  <Button asChild className="w-full">
+                  <Button asChild className="shadow-sm">
                     <Link href="/login">Login</Link>
                   </Button>
                 )}

@@ -67,6 +67,7 @@ async function getAuthHeaders(): Promise<HeadersInit> {
 }
 
 // --- ENHANCED LOGIN ACTION with callback URL support ---
+
 export async function loginAction(
   prevState: FormState,
   formData: FormData
@@ -83,16 +84,21 @@ export async function loginAction(
     };
   }
 
+  let userRole: string | null = null; // 1. Variable to store the role
+
   try {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(validatedFields.data),
-      cache: "no-store", // Never cache authentication requests
+      cache: "no-store",
     });
 
+    // 2. Get the JSON response body
+    // Your backend controller returns { success, message, user }
+    const data = await res.json().catch(() => ({}));
+
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
       return {
         success: false,
         message: data.message || "Invalid email or password. Please try again.",
@@ -127,6 +133,15 @@ export async function loginAction(
       });
     }
 
+    // 3. Get the role from the response data
+    if (!data.user || !data.user.role) {
+      return {
+        success: false,
+        message: "Login success, but user role was not returned.",
+      };
+    }
+    userRole = data.user.role; // e.g., "ADMIN" or "USER"
+
     // Revalidate all user-related caches
     revalidateTag("user-profile", "max");
   } catch (error) {
@@ -137,8 +152,12 @@ export async function loginAction(
     };
   }
 
-  // Redirect to dashboard (or callback URL if you implement it)
-  redirect("/dashboard");
+  // 4. Conditional redirect (must be outside try/catch)
+  if (userRole === "ADMIN") {
+    redirect("/dashboard");
+  } else {
+    redirect("/dashboard/settings");
+  }
 }
 
 // --- ENHANCED REGISTER ACTION ---

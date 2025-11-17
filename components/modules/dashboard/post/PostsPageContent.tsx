@@ -4,6 +4,7 @@ import { Post } from "@/types";
 import { TableSkeleton } from "./PostPageSkeleton";
 import { PostsDataTable } from "@/app/(dashboard)/dashboard/posts/_components/PostsDataTable";
 import { CreatePostButton } from "@/app/(dashboard)/dashboard/posts/_components/PostActions";
+import { BlogSearchInput } from "../../blog/BlogSearchInput";
 
 export const metadata = {
   title: "Manage Posts",
@@ -37,7 +38,7 @@ export default async function PostsPageContent({
         <CreatePostButton />
       </div>
 
-      {/* TODO: Add search input for the admin table */}
+      <BlogSearchInput initialSearch={currentSearch} />
 
       <Suspense
         key={`${currentPage}-${currentSearch}`}
