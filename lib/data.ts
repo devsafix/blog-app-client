@@ -35,11 +35,11 @@ export async function getAllPosts({
 
 // 2. Get a single post by ID
 export async function getPostById(id: string | number) {
-  "use cache";
-  cacheTag("posts", `post:${id}`);
-  cacheLife("hours");
+  
 
   const url = `${process.env.API_BASE_URL}/post/${id}`;
+
+  console.log(url)
 
   try {
     const res = await fetch(url);
