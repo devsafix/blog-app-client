@@ -1,5 +1,5 @@
-import { EditPostPageSkeleton } from "@/components/modules/dashboard/post/EditPostPageSkeleton";
 import EditPostPageContent from "@/components/modules/dashboard/post/EditPostPageContent";
+import { EditPostPageSkeleton } from "@/components/modules/dashboard/post/PostPageSkeleton";
 import { Suspense } from "react";
 
 type Props = {

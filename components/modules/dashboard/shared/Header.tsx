@@ -108,7 +108,7 @@ export function Header({ user }: { user: UserPayload }) {
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden md:inline font-medium text-gray-700">
-                  {typeof user?.name === "string" ? user.name : "User"}
+                  {typeof user?.name === "string" ? user?.name : "User"}
                 </span>
               </Button>
             </motion.div>

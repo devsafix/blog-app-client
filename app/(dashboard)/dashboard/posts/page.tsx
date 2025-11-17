@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
-import { PostsPageSkeleton } from "@/components/modules/dashboard/post/PostPageSkeleton";
 import PostsPageContent from "@/components/modules/dashboard/post/PostsPageContent";
+import { PostsPageSkeleton } from "@/components/modules/dashboard/post/PostPageSkeleton";
 
 export const metadata = {
   title: "Manage Posts",

@@ -9,36 +9,57 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import {
+  Loader2,
+  FileText,
+  Image as ImageIcon,
+  Tag,
+  Star,
+  AlertCircle,
+} from "lucide-react";
 import { Post } from "@/types";
+import { motion } from "framer-motion";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
-// Initial state for the form
 const initialState: FormState = { success: false, message: "" };
 
-// Submit button that shows a loading state
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button
+      type="submit"
+      disabled={pending}
+      className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all"
+    >
       {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {pending ? "Updating..." : "Update Post"}
+      {pending ? "Updating Post..." : "Update Post"}
     </Button>
   );
 }
 
-// The Edit Form component
-export function EditPostForm({ post }: { post: Post }) {
-  // 1. Bind the postId to the Server Action
-  // This is the standard way to pass extra args to a form action
-  const updatePostActionWithId = updatePostAction.bind(null, post.id);
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
 
-  // 2. Initialize useFormState with the bound action
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
+
+export function EditPostForm({ post }: { post: Post }) {
+  const updatePostActionWithId = updatePostAction.bind(null, post.id);
   const [formState, formAction] = useActionState(
     updatePostActionWithId,
     initialState
   );
 
-  // 3. Show a toast notification on success or error
   useEffect(() => {
     if (formState.message) {
       if (formState.success) {
@@ -50,67 +71,150 @@ export function EditPostForm({ post }: { post: Post }) {
   }, [formState]);
 
   return (
-    <form action={formAction} className="space-y-6 max-w-3xl">
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
-        <Input id="title" name="title" defaultValue={post.title} required />
-        {formState.errors?.title && (
-          <p className="text-sm text-red-600">{formState.errors.title[0]}</p>
-        )}
-      </div>
+    <Card className="border-gray-200 shadow-sm">
+      <CardContent className="p-8">
+        <motion.form
+          action={formAction}
+          className="space-y-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Title */}
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label
+              htmlFor="title"
+              className="text-sm font-medium text-gray-700 flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4 text-gray-500" />
+              Post Title
+            </Label>
+            <Input
+              id="title"
+              name="title"
+              defaultValue={post.title}
+              className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+            {formState.errors?.title && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {formState.errors.title[0]}
+              </p>
+            )}
+          </motion.div>
 
-      <div className="space-y-2">
-        <Label htmlFor="content">Content (supports HTML)</Label>
-        <Textarea
-          id="content"
-          name="content"
-          defaultValue={post.content}
-          rows={15}
-          required
-        />
-        {formState.errors?.content && (
-          <p className="text-sm text-red-600">{formState.errors.content[0]}</p>
-        )}
-      </div>
+          {/* Content */}
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label
+              htmlFor="content"
+              className="text-sm font-medium text-gray-700"
+            >
+              Content{" "}
+              <span className="text-gray-400 text-xs">(HTML supported)</span>
+            </Label>
+            <Textarea
+              id="content"
+              name="content"
+              defaultValue={post.content}
+              rows={15}
+              className="font-mono text-sm border-gray-200 focus:border-blue-500 focus:ring-blue-500 resize-none"
+              required
+            />
+            {formState.errors?.content && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {formState.errors.content[0]}
+              </p>
+            )}
+          </motion.div>
 
-      <div className="space-y-2">
-        <Label htmlFor="thumbnail">Thumbnail URL</Label>
-        <Input
-          id="thumbnail"
-          name="thumbnail"
-          defaultValue={post.thumbnail || ""}
-          placeholder="https://..."
-        />
-        {formState.errors?.thumbnail && (
-          <p className="text-sm text-red-600">
-            {formState.errors.thumbnail[0]}
-          </p>
-        )}
-      </div>
+          {/* Thumbnail */}
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label
+              htmlFor="thumbnail"
+              className="text-sm font-medium text-gray-700 flex items-center gap-2"
+            >
+              <ImageIcon className="w-4 h-4 text-gray-500" />
+              Thumbnail URL <span className="text-gray-400">(Optional)</span>
+            </Label>
+            <Input
+              id="thumbnail"
+              name="thumbnail"
+              defaultValue={post.thumbnail || ""}
+              placeholder="https://example.com/image.jpg"
+              className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+            />
+            {formState.errors?.thumbnail && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {formState.errors.thumbnail[0]}
+              </p>
+            )}
+          </motion.div>
 
-      <div className="space-y-2">
-        <Label htmlFor="tags">Tags (comma-separated)</Label>
-        <Input
-          id="tags"
-          name="tags"
-          defaultValue={post.tags.join(", ")}
-          placeholder="e.g., nextjs, react, typescript"
-        />
-        {formState.errors?.tags && (
-          <p className="text-sm text-red-600">{formState.errors.tags[0]}</p>
-        )}
-      </div>
+          {/* Tags */}
+          <motion.div variants={itemVariants} className="space-y-2">
+            <Label
+              htmlFor="tags"
+              className="text-sm font-medium text-gray-700 flex items-center gap-2"
+            >
+              <Tag className="w-4 h-4 text-gray-500" />
+              Tags{" "}
+              <span className="text-gray-400 text-xs">(Comma-separated)</span>
+            </Label>
+            <Input
+              id="tags"
+              name="tags"
+              defaultValue={post.tags.join(", ")}
+              placeholder="e.g., nextjs, react, typescript"
+              className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+            />
+            {formState.errors?.tags && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {formState.errors.tags[0]}
+              </p>
+            )}
+          </motion.div>
 
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="isFeatured"
-          name="isFeatured"
-          defaultChecked={post.isFeatured}
-        />
-        <Label htmlFor="isFeatured">Mark as Featured</Label>
-      </div>
+          {/* Featured Checkbox */}
+          <motion.div
+            variants={itemVariants}
+            className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-100"
+          >
+            <Checkbox
+              id="isFeatured"
+              name="isFeatured"
+              defaultChecked={post.isFeatured}
+              className="border-blue-300"
+            />
+            <Label
+              htmlFor="isFeatured"
+              className="text-sm font-medium text-gray-700 cursor-pointer flex items-center gap-2"
+            >
+              <Star className="w-4 h-4 text-blue-600" />
+              Mark as Featured Post
+            </Label>
+          </motion.div>
 
-      <SubmitButton />
-    </form>
+          {/* Submit Button */}
+          <motion.div
+            variants={itemVariants}
+            className="pt-4 border-t flex gap-3"
+          >
+            <SubmitButton />
+            <Button
+              type="button"
+              variant="outline"
+              asChild
+              className="border-gray-200"
+            >
+              <Link href="/dashboard/posts">Cancel</Link>
+            </Button>
+          </motion.div>
+        </motion.form>
+      </CardContent>
+    </Card>
   );
 }

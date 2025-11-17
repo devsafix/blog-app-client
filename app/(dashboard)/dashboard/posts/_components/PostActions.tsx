@@ -13,7 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, PlusCircle, AlertTriangle } from "lucide-react";
 import { useTransition } from "react";
 import {
   Sheet,
@@ -24,46 +24,59 @@ import {
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { CreatePostForm } from "./CreatePostForm";
+import { motion } from "framer-motion";
 
-// --- Delete Button with Confirmation ---
 export function DeletePostButton({ postId }: { postId: number }) {
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
     startTransition(async () => {
-      console.log(postId);
       const result = await deletePostAction(postId);
-      console.log(result);
       if (result.success) {
         toast.success(result.message);
-      } else toast.error(result.message);
+      } else {
+        toast.error(result.message);
+      }
     });
   };
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-red-500 hover:text-red-600"
-        >
-          <Trash2 className="w-4 h-4" />
-        </Button>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </motion.div>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this
-            post.
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-red-50 rounded-full">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+            </div>
+            <AlertDialogTitle className="text-xl">
+              Delete Post?
+            </AlertDialogTitle>
+          </div>
+          <AlertDialogDescription className="text-base">
+            This action cannot be undone. This will permanently delete this post
+            and remove it from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
+        <AlertDialogFooter className="gap-2 sm:gap-0">
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={isPending}>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isPending}
+            className="bg-red-600 hover:bg-red-700"
+          >
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Delete
+            {isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -71,16 +84,20 @@ export function DeletePostButton({ postId }: { postId: number }) {
   );
 }
 
-// --- Create Post Button (opens a Sheet) ---
 export function CreatePostButton() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button>Create Post</Button>
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button className="shadow-lg hover:shadow-xl transition-all gap-2">
+            <PlusCircle className="w-4 h-4" />
+            Create Post
+          </Button>
+        </motion.div>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Create New Post</SheetTitle>
+        <SheetHeader className="pb-6 border-b">
+          <SheetTitle className="text-2xl">Create New Post</SheetTitle>
         </SheetHeader>
         <CreatePostForm />
       </SheetContent>

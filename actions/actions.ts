@@ -411,13 +411,13 @@ export async function updatePostAction(
     }
 
     // Revalidate caches
-
     revalidateTag(`post:${postId}`, "max");
     revalidateTag("posts", "max");
     revalidateTag("posts-featured", "max");
     revalidateTag("sitemap", "max");
     revalidatePath("/blog");
     revalidatePath(`/blog/${postId}`);
+    revalidatePath(`/dashboard/posts/edit/${postId}`);
     revalidatePath("/dashboard");
 
     return { success: true, message: "Post updated successfully!" };
