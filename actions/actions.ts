@@ -8,14 +8,27 @@ import { getUserPayload, requireAdmin } from "@/lib/auth";
 
 // --- Zod Schemas for Validation ---
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
 const registerSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  name: z
+    .string()
+    .min(3, "Name must be at least 3 characters")
+    .max(50, "Name must be less than 50 characters")
+    .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces"),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .max(100, "Password is too long"),
 });
 
 const postSchema = z.object({
@@ -42,72 +55,18 @@ export type FormState = {
 
 const API_BASE_URL = process.env.API_BASE_URL;
 
-// --- Helper: Get Auth Headers ---
+// --- Enhanced Auth Headers Helper ---
 async function getAuthHeaders(): Promise<HeadersInit> {
-  // FIX: Removed 'await' from cookies()
   const cookieStore = await cookies();
   const token = cookieStore.get("blogAppToken")?.value;
 
-  const headers: HeadersInit = {
+  return {
     "Content-Type": "application/json",
+    ...(token && { Cookie: `blogAppToken=${token}` }),
   };
-
-  if (token) {
-    headers["Cookie"] = `blogAppToken=${token}`;
-  }
-
-  return headers;
 }
 
-// --- REGISTER ACTION ---
-export async function registerAction(
-  prevState: FormState,
-  formData: FormData
-): Promise<FormState> {
-  const validatedFields = registerSchema.safeParse(
-    Object.fromEntries(formData.entries())
-  );
-
-  if (!validatedFields.success) {
-    return {
-      success: false,
-      message: "Validation failed. Please check your inputs.",
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
-  }
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/user`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(validatedFields.data),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      return {
-        success: false,
-        message: data.message || "Registration failed. Please try again.",
-      };
-    }
-
-    return {
-      success: true,
-      message: "Registration successful! You can now log in.",
-    };
-  } catch (error) {
-    console.error("Registration error:", error);
-    return {
-      success: false,
-      message: "An unknown error occurred. Please try again.",
-    };
-  }
-}
-
-// --- LOGIN ACTION ---
+// --- ENHANCED LOGIN ACTION with callback URL support ---
 export async function loginAction(
   prevState: FormState,
   formData: FormData
@@ -119,7 +78,7 @@ export async function loginAction(
   if (!validatedFields.success) {
     return {
       success: false,
-      message: "Validation failed. Please check your inputs.",
+      message: "Please check your inputs and try again.",
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
@@ -127,68 +86,128 @@ export async function loginAction(
   try {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(validatedFields.data),
+      cache: "no-store", // Never cache authentication requests
     });
 
     if (!res.ok) {
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       return {
         success: false,
-        message: data.message || "Invalid email or password.",
+        message: data.message || "Invalid email or password. Please try again.",
       };
     }
 
-    // Handle the Set-Cookie header from backend
+    // Handle Set-Cookie header
     const setCookieHeader = res.headers.get("Set-Cookie");
-    if (setCookieHeader) {
-      // Parse cookie value and attributes
-      const cookieParts = setCookieHeader.split(";");
-      const cookieValue = cookieParts[0].split("=")[1];
-      const maxAgeMatch = setCookieHeader.match(/Max-Age=(\d+)/);
-      const maxAge = maxAgeMatch
-        ? parseInt(maxAgeMatch[1], 10)
-        : 7 * 24 * 60 * 60; // Default 7 days
-
-      if (cookieValue) {
-        // FIX: Removed 'await' from cookies()
-        const cookieStore = await cookies();
-        cookieStore.set("blogAppToken", cookieValue, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-          path: "/",
-          maxAge: maxAge,
-        });
-      }
-    } else {
+    if (!setCookieHeader) {
       return {
         success: false,
-        message: "Login successful, but no auth token was provided.",
+        message: "Authentication failed. Please try again.",
       };
     }
 
-    // Revalidate and redirect
-    revalidatePath("/", "layout");
+    // Parse and set cookie
+    const cookieParts = setCookieHeader.split(";");
+    const cookieValue = cookieParts[0].split("=")[1];
+    const maxAgeMatch = setCookieHeader.match(/Max-Age=(\d+)/);
+    const maxAge = maxAgeMatch
+      ? parseInt(maxAgeMatch[1], 10)
+      : 7 * 24 * 60 * 60;
+
+    if (cookieValue) {
+      const cookieStore = await cookies();
+      cookieStore.set("blogAppToken", cookieValue, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        path: "/",
+        maxAge,
+      });
+    }
+
+    // Revalidate all user-related caches
+    revalidateTag("user-profile", "max");
   } catch (error) {
     console.error("Login error:", error);
     return {
       success: false,
-      message: "An unknown error occurred. Please try again.",
+      message: "Unable to connect to the server. Please try again later.",
     };
   }
 
-  // Redirect after try-catch to avoid redirect errors
+  // Redirect to dashboard (or callback URL if you implement it)
   redirect("/dashboard");
 }
 
-// --- LOGOUT ACTION ---
+// --- ENHANCED REGISTER ACTION ---
+export async function registerAction(
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const validatedFields = registerSchema.safeParse(
+    Object.fromEntries(formData.entries())
+  );
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: "Please check your inputs and try again.",
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/user`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(validatedFields.data),
+      cache: "no-store",
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      // Handle specific error cases
+      if (res.status === 409) {
+        return {
+          success: false,
+          message: "This email is already registered. Please sign in instead.",
+        };
+      }
+      return {
+        success: false,
+        message: data.message || "Registration failed. Please try again.",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Account created successfully! Please sign in to continue.",
+    };
+  } catch (error) {
+    console.error("Registration error:", error);
+    return {
+      success: false,
+      message: "Unable to connect to the server. Please try again later.",
+    };
+  }
+}
+
+// --- ENHANCED LOGOUT ACTION ---
 export async function logoutAction() {
-  const cookieStore = await cookies();
-  cookieStore.delete("blogAppToken");
-  revalidatePath("/", "layout");
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete("blogAppToken");
+
+    // Clear all caches related to user data
+    revalidateTag("user-profile", "max");
+    revalidateTag("posts", "max");
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+
   redirect("/login");
 }
 

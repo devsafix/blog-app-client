@@ -7,18 +7,19 @@ export default async function AuthLayoutContent({
 }: {
   children: ReactNode;
 }) {
-  // 1. Check if the user is already logged in
   const user = await getUserPayload();
 
-  // 2. If they are, redirect them to the dashboard
   if (user) {
     redirect("/dashboard");
   }
 
-  // 3. If not, show the login/register page in a centered layout
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md">{children}</div>
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-50 via-blue-50/30 to-gray-50 p-4 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl" />
+
+      <div className="w-full max-w-md relative z-10">{children}</div>
     </div>
   );
 }
