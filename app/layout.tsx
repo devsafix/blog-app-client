@@ -8,14 +8,14 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: {
     default:
-      "DSX-B | A modern, fast, and SEO-friendly blog built with Next.js.",
+      "DSX-B | A modern, fast, and SEO-friendly blog built with Next.js 16.",
     template: "%s | DSX-B",
   },
-  description: "A modern, fast, and SEO-friendly blog built with Next.js.",
+  description: "A modern, fast, and SEO-friendly blog built with Next.js 16.",
 
   openGraph: {
     title: "DSX-B",
-    description: "A modern, fast, and SEO-friendly blog built with Next.js.",
+    description: "A modern, fast, and SEO-friendly blog built with Next.js 16.",
     url: "http://localhost:3000", // TODO: Change this to your production URL
     siteName: "DSX-B",
     images: [
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "DSX-B",
-    description: "A modern, fast, and SEO-friendly blog built with Next.js.",
+    description: "A modern, fast, and SEO-friendly blog built with Next.js 16.",
     site: "@nextjs",
     images: [
       {
