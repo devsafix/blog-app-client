@@ -1,16 +1,23 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { loginAction, FormState } from "@/actions/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Loader2, Mail, Lock, ArrowRight } from "lucide-react";
+import {
+  AlertCircle,
+  Loader2,
+  Mail,
+  Lock,
+  ArrowRight,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
-import { useActionState } from "react";
+import { useActionState, useState } from "react"; // Added useState
+import { FormState, loginAction } from "@/actions/actions";
 
 const initialState: FormState = {
   success: false,
@@ -62,8 +69,18 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
 
+  // 1. Create state to control the inputs
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const error =
     formState.success === false && formState.message ? formState.message : null;
+
+  // 2. Function to auto-fill credentials
+  const handleAdminFill = () => {
+    setEmail("devsafix@gmail.com");
+    setPassword("12345678");
+  };
 
   return (
     <motion.div
@@ -81,6 +98,19 @@ export default function LoginPage() {
             ? "Please sign in to continue"
             : "Sign in to continue to your dashboard"}
         </p>
+      </motion.div>
+
+      {/* 3. Quick Admin Login Button */}
+      <motion.div variants={itemVariants} className="mb-6">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleAdminFill}
+          className="w-full border-dashed border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 hover:border-blue-400"
+        >
+          <ShieldCheck className="w-4 h-4 mr-2" />
+          Quick Fill: Admin Credentials
+        </Button>
       </motion.div>
 
       {error && (
@@ -129,6 +159,9 @@ export default function LoginPage() {
               placeholder="name@example.com"
               className="pl-10 h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
               required
+              // 4. Bind state to input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
         </motion.div>
@@ -149,6 +182,9 @@ export default function LoginPage() {
               placeholder="••••••••"
               className="pl-10 h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
               required
+              // 5. Bind state to input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
         </motion.div>

@@ -20,7 +20,9 @@ export async function getAllPosts({
   const url = `${process.env.API_BASE_URL}/post?page=${page}&limit=${limit}&sortBy=${sortBy}`;
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      next: { tags: ["posts"] },
+    });
 
     if (!res.ok) {
       throw new Error(`Failed to fetch posts: ${res.statusText}`);
@@ -95,7 +97,9 @@ export async function getFeaturedPosts(limit: number = 6) {
   const url = `${process.env.API_BASE_URL}/post?page=1&limit=${limit}&isFeatured=true&sortBy=desc`;
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      next: { tags: ["posts-featured"] },
+    });
 
     if (!res.ok) {
       throw new Error(`Failed to fetch featured posts: ${res.statusText}`);
@@ -135,7 +139,9 @@ export async function searchPosts({
     params.set("tags", tags.join(","));
   }
 
-  const url = `${process.env.API_BASE_URL}/post?${params.toString()}&sortBy=desc`;
+  const url = `${
+    process.env.API_BASE_URL
+  }/post?${params.toString()}&sortBy=desc`;
 
   try {
     const res = await fetch(url);
