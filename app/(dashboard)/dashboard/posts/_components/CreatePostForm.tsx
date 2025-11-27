@@ -50,7 +50,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-export function CreatePostForm() {
+export function CreatePostForm({ onSuccess }: { onSuccess?: () => void }) {
   const [formState, formAction] = useActionState(
     createPostAction,
     initialState
@@ -60,11 +60,12 @@ export function CreatePostForm() {
     if (formState.message) {
       if (formState.success) {
         toast.success(formState.message);
+        onSuccess?.();
       } else {
         toast.error(formState.message);
       }
     }
-  }, [formState]);
+  }, [formState, onSuccess]);
 
   return (
     <motion.form

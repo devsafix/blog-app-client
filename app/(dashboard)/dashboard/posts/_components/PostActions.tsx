@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash2, PlusCircle, AlertTriangle } from "lucide-react";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   Sheet,
   SheetContent,
@@ -85,8 +85,10 @@ export function DeletePostButton({ postId }: { postId: number }) {
 }
 
 export function CreatePostButton() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Button className="shadow-lg hover:shadow-xl transition-all gap-2">
@@ -99,7 +101,11 @@ export function CreatePostButton() {
         <SheetHeader className="pb-6 border-b">
           <SheetTitle className="text-2xl">Create New Post</SheetTitle>
         </SheetHeader>
-        <CreatePostForm />
+        <CreatePostForm
+          onSuccess={() => {
+            setOpen(false);
+          }}
+        />
       </SheetContent>
     </Sheet>
   );

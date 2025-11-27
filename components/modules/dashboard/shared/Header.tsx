@@ -72,10 +72,7 @@ export function Header({ user }: { user: UserPayload }) {
               size="sm"
               className="shadow-sm hover:shadow-md transition-all"
             >
-              <Link
-                href="/dashboard/posts/new"
-                className="flex items-center gap-2"
-              >
+              <Link href="/dashboard/posts" className="flex items-center gap-2">
                 <PlusCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">New Post</span>
               </Link>
