@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { Shield } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | DSX-B",
+  title: "Privacy Policy",
   description:
     "Learn how DSX-B collects, uses, and protects your personal information. Our commitment to your privacy and data security.",
   alternates: {

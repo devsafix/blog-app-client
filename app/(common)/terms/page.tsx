@@ -3,7 +3,7 @@ import { FileText } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | DSX-B",
+  title: "Terms of Service",
   description:
     "Read the Terms of Service for DSX-B. Understand your rights and responsibilities when using our blogging platform.",
   alternates: {

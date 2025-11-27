@@ -9,7 +9,7 @@ import { HelpCircle } from "lucide-react";
 import CTASection from "@/components/shared/CTASection";
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions | DSX-B",
+  title: "Frequently Asked Questions",
   description:
     "Find answers to common questions about DSX-B, including how to use our platform, account management, content policies, and more.",
   alternates: {

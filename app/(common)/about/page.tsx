@@ -3,7 +3,7 @@ import { Users, Target, Lightbulb, Award } from "lucide-react";
 import CTASection from "@/components/shared/CTASection";
 
 export const metadata: Metadata = {
-  title: "About Us | DSX-B",
+  title: "About Us",
   description:
     "Learn about DSX-B, our mission, values, and the team behind our blog platform. Discover how we're helping writers share their stories with the world.",
   alternates: {

@@ -4,7 +4,7 @@ import { BlogPageSkeleton } from "@/components/modules/blog/BlogPageSkeleton";
 import BlogPageContent from "@/components/modules/blog/BlogPageContent";
 
 export const metadata: Metadata = {
-  title: "All Blog Posts | DSX-B",
+  title: "All Blog Posts",
   description:
     "Browse all our latest articles, tutorials, and insights on technology, development, and more.",
   alternates: {

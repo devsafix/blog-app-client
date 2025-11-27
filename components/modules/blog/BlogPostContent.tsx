@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const plainText = post.content.replace(/<[^>]*>/g, "").substring(0, 160);
 
   return {
-    title: `${post.title} | DSX-B`,
+    title: `${post.title}`,
     description: plainText,
     keywords: post.tags,
     authors: [{ name: post.author.name }],

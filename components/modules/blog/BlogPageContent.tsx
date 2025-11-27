@@ -8,7 +8,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "All Blog Posts | DSX-B",
+  title: "All Blog Posts",
   description:
     "Browse all our latest articles, tutorials, and insights on technology, development, and more.",
   alternates: {
